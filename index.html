@@ -145,7 +145,7 @@
             <option value="ALL">All Facilities</option>
             <option value="EVACUATION CENTER">Evacuation Center</option>
             <option value="SCHOOL">School</option>
-            <option value="CHURCHES">Churches</option>
+            <option value="CHURCH">Church</option>
             <option value="COVERED COURT">Covered Court</option>
             <option value="BARANGAY HALL">Barangay Hall</option>
         </select>
@@ -170,13 +170,13 @@
         L.control.zoom({ position: 'topleft' }).addTo(map);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
-        // Icon Mapping Logic
         function getIconForType(type) {
-            let svgPath = '<path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>'; // Default Home/Center
+            let svgPath = '<path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>'; 
             
             if (type === 'SCHOOL') {
                 svgPath = '<path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>';
-            } else if (type === 'CHURCHES') {
+            // UPDATED to 'CHURCH' instead of 'CHURCHES'
+            } else if (type === 'CHURCH') {
                 svgPath = '<path d="M13 2h-2v3H8v2h3v4H7v2h4v7h2v-7h4v-2h-4V7h3V5h-3V2z"/>';
             } else if (type === 'COVERED COURT') {
                 svgPath = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 7h2v4h4v2h-4v4h-2v-4H7v-2h4V7z"/>';
@@ -200,9 +200,10 @@
         
         var markers = [];
 
-        if (sheetCsvUrl === "") {
+        if (sheetCsvUrl === "YOUR_CSV_PUBLISH_LINK_HERE" || sheetCsvUrl === "") {
             document.getElementById('spinner-container').style.display = 'none';
             document.getElementById('loading-title').innerHTML = "⚠️ <b>Action Required:</b>";
+            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 180 of the code.";
         } else {
             Papa.parse(sheetCsvUrl, {
                 download: true, header: true, skipEmptyLines: true,
@@ -218,8 +219,13 @@
                         }
                         
                         var keys = Object.keys(cleanRow);
-                        var lat = parseFloat(cleanRow[keys.find(k => k.includes('LATITUDE'))]);
-                        var lng = parseFloat(cleanRow[keys.find(k => k.includes('LONGITUDE'))]);
+                        var latKey = keys.find(k => k.includes('LATITUDE'));
+                        var lngKey = keys.find(k => k.includes('LONGITUDE'));
+                        
+                        if (!latKey || !lngKey) return; // Skip if no coordinate headers
+
+                        var lat = parseFloat(cleanRow[latKey]);
+                        var lng = parseFloat(cleanRow[lngKey]);
                         var name = cleanRow[keys.find(k => k.includes('LOCATION'))] || "Unknown";
                         var mun = cleanRow[keys.find(k => k.includes('MUNICAPLITY') || k.includes('MUNICIPALITY'))] || "Unknown";
                         var type = (cleanRow[keys.find(k => k.includes('TYPE'))] || "EVACUATION CENTER").toUpperCase().trim();
@@ -247,7 +253,14 @@
                             markers.push(marker);
                         }
                     });
-                    if (validPointsPlotted > 0) document.getElementById('loading').style.display = 'none';
+                    
+                    if (validPointsPlotted > 0) {
+                        document.getElementById('loading').style.display = 'none';
+                    } else {
+                        document.getElementById('spinner-container').style.display = 'none';
+                        document.getElementById('loading-title').innerHTML = "⚠️ <b>Data Connection Failed</b>";
+                        document.getElementById('loading-desc').innerHTML = "Could not find valid coordinates in the sheet.";
+                    }
                 }
             });
         }
