@@ -27,13 +27,12 @@
             margin: 0; padding: 0; height: 100%; width: 100%; 
             font-family: 'Inter', sans-serif; overflow: hidden; 
             background-color: #f8fafc;
-            -webkit-font-smoothing: antialiased; /* Makes fonts look smoother/crisper */
+            -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
         
         #map { height: 100vh; width: 100vw; z-index: 1; }
         
-        /* Modern Floating Panel with Dropdown */
         #search-box { 
             position: absolute; top: 20px; left: 60px; z-index: 999; 
             background: rgba(255, 255, 255, 0.5); padding: 8px; 
@@ -86,11 +85,6 @@
             max-width: 600px;
         }
 
-        /* -------------------------------------------
-           Leaflet Overrides: Popups & Zoom Controls
-        ---------------------------------------------- */
-        
-        /* Smaller, Smoother Zoom Controls */
         .leaflet-bar {
             box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
             border: 1px solid var(--border) !important;
@@ -98,46 +92,34 @@
             overflow: hidden;
         }
         .leaflet-touch .leaflet-bar a, .leaflet-bar a {
-            width: 26px !important;
-            height: 26px !important;
-            line-height: 26px !important;
-            font-size: 15px !important;
-            font-weight: 500 !important;
-            color: var(--text-main) !important;
+            width: 26px !important; height: 26px !important;
+            line-height: 26px !important; font-size: 15px !important;
+            font-weight: 500 !important; color: var(--text-main) !important;
             background-color: rgba(255, 255, 255, 0.8) !important;
             backdrop-filter: blur(4px) !important;
             transition: all 0.2s ease !important;
         }
-        .leaflet-bar a:hover {
-            background-color: var(--surface) !important;
-            color: var(--primary) !important;
-        }
-        .leaflet-control-zoom-in { border-bottom: 1px solid var(--border) !important; }
+        .leaflet-bar a:hover { background-color: var(--surface) !important; color: var(--primary) !important; }
 
-        /* Smaller, Cleaner Popup Styling */
-        .leaflet-popup-content-wrapper {
-            border-radius: 10px; box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.15); padding: 0;
-        }
+        .leaflet-popup-content-wrapper { border-radius: 10px; box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.15); padding: 0; }
         .leaflet-popup-content { margin: 12px 14px; font-family: 'Inter', sans-serif; }
         
-        .card-title {
-            font-size: 13px; font-weight: 600; color: var(--text-main);
-            margin-bottom: 8px; display: block; line-height: 1.3;
-        }
-        .card-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 11px;
-        }
+        .card-title { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; display: block; line-height: 1.3; }
+        .card-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
         .card-row:last-child { border-bottom: none; }
         .card-label { color: var(--text-muted); font-weight: 500; }
         .card-value { color: var(--text-main); font-weight: 500; text-align: right; }
         
-        .badge {
-            display: inline-block; padding: 3px 8px; border-radius: 9999px;
-            font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-        }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 9999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .badge-available { background-color: var(--success-bg); color: var(--success-text); }
         .badge-default { background-color: #f1f5f9; color: #475569; }
+
+        .custom-evac-icon div {
+            transition: transform 0.2s ease;
+        }
+        .custom-evac-icon div:hover {
+            transform: scale(1.1);
+        }
 
     </style>
 </head>
@@ -154,12 +136,7 @@
 
     <div id="compass">
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="50,5 65,50 50,95 35,50" fill="#cbd5e1"/>
-            <polygon points="50,5 65,50 50,50" fill="#ef4444"/>
-            <polygon points="50,5 50,50 35,50" fill="#dc2626"/>
-            <polygon points="50,95 65,50 50,50" fill="#94a3b8"/>
-            <polygon points="50,95 50,50 35,50" fill="#64748b"/>
-            <text x="50" y="32" fill="white" font-family="Inter" font-size="16" font-weight="bold" text-anchor="middle">N</text>
+            <polygon points="50,5 65,50 50,95 35,50" fill="#cbd5e1"/><polygon points="50,5 65,50 50,50" fill="#ef4444"/><polygon points="50,5 50,50 35,50" fill="#dc2626"/><polygon points="50,95 65,50 50,50" fill="#94a3b8"/><polygon points="50,95 50,50 35,50" fill="#64748b"/><text x="50" y="32" fill="white" font-family="Inter" font-size="16" font-weight="bold" text-anchor="middle">N</text>
         </svg>
     </div>
 
@@ -191,42 +168,44 @@
 
         var map = L.map('map', { zoomControl: false }).setView([15.58, 120.59], 10);
         L.control.zoom({ position: 'topleft' }).addTo(map);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
-            maxZoom: 19,
-            attribution: '© OpenStreetMap | © CARTO'
-        }).addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
-        var evacIcon = L.divIcon({
-            html: `<div style="background-color: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3zm0 2.7l5 4.5v6.8h-2v-6H9v6H7v-6.8l5-4.5z"/></svg>
-                   </div>`,
-            className: 'custom-evac-icon',
-            iconSize: [28, 28],
-            iconAnchor: [14, 14],
-            popupAnchor: [0, -14]
-        });
+        // Icon Mapping Logic
+        function getIconForType(type) {
+            let svgPath = '<path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>'; // Default Home/Center
+            
+            if (type === 'SCHOOL') {
+                svgPath = '<path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>';
+            } else if (type === 'CHURCHES') {
+                svgPath = '<path d="M13 2h-2v3H8v2h3v4H7v2h4v7h2v-7h4v-2h-4V7h3V5h-3V2z"/>';
+            } else if (type === 'COVERED COURT') {
+                svgPath = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 7h2v4h4v2h-4v4h-2v-4H7v-2h4V7z"/>';
+            } else if (type === 'BARANGAY HALL') {
+                svgPath = '<path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-8h8v8z"/>';
+            }
 
-        // =========================================================================
-        // 🚨 IMPORTANT: PASTE YOUR CSV PUBLISH LINK BELOW 🚨
-        // =========================================================================
-        var sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQd_7XwY0Z_Dzs9THcJrXePJOdcchsr8XRGJ3B1E05RJR3j6Z-Y_8lak51-tM-znL2CIoOWwRP83tnM/pub?gid=1609154454&single=true&output=csv";
-        
-        if (sheetCsvUrl.includes("pubhtml")) {
-            sheetCsvUrl = sheetCsvUrl.replace("pubhtml", "pub?output=csv");
+            return L.divIcon({
+                html: `<div style="background-color: var(--primary); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white">${svgPath}</svg>
+                       </div>`,
+                className: 'custom-evac-icon',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13],
+                popupAnchor: [0, -13]
+            });
         }
+
+        var sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQd_7XwY0Z_Dzs9THcJrXePJOdcchsr8XRGJ3B1E05RJR3j6Z-Y_8lak51-tM-znL2CIoOWwRP83tnM/pub?gid=1609154454&single=true&output=csv";
+        if (sheetCsvUrl.includes("pubhtml")) sheetCsvUrl = sheetCsvUrl.replace("pubhtml", "pub?output=csv");
         
         var markers = [];
 
-        if (sheetCsvUrl === "YOUR_CSV_PUBLISH_LINK_HERE" || sheetCsvUrl === "") {
+        if (sheetCsvUrl === "") {
             document.getElementById('spinner-container').style.display = 'none';
             document.getElementById('loading-title').innerHTML = "⚠️ <b>Action Required:</b>";
-            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 180 of the code.";
-        } 
-        else {
+        } else {
             Papa.parse(sheetCsvUrl, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
+                download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
                     var data = results.data;
                     var validPointsPlotted = 0;
@@ -239,125 +218,61 @@
                         }
                         
                         var keys = Object.keys(cleanRow);
-                        
-                        var latKey = keys.find(k => k.includes('LATITUDE'));
-                        var lngKey = keys.find(k => k.includes('LONGITUDE'));
-                        var locKey = keys.find(k => k.includes('LOCATION'));
-                        var munKey = keys.find(k => k.includes('MUNICAPLITY') || k.includes('MUNICIPALITY'));
-                        var typeKey = keys.find(k => k.includes('TYPE')); 
-                        var totalCapKey = keys.find(k => k.includes('TOTAL CAPACITY'));
-                        var curCapKey = keys.find(k => k.includes('CURRENTCAP') || k.includes('CURRENT CAP'));
-                        var statusKey = keys.find(k => k.includes('STATUS'));
-
-                        var lat = latKey ? parseFloat(cleanRow[latKey]) : NaN;
-                        var lng = lngKey ? parseFloat(cleanRow[lngKey]) : NaN;
-                        var name = (locKey && cleanRow[locKey]) ? cleanRow[locKey] : "Unknown Facility";
-                        var mun = (munKey && cleanRow[munKey]) ? cleanRow[munKey] : "Unknown";
-                        var facilityType = (typeKey && cleanRow[typeKey]) ? cleanRow[typeKey].toUpperCase().trim() : "EVACUATION CENTER";
-                        var totalCap = (totalCapKey && cleanRow[totalCapKey]) ? cleanRow[totalCapKey] : "0";
-                        var currentCap = (curCapKey && cleanRow[curCapKey]) ? cleanRow[curCapKey] : "0";
-                        var status = (statusKey && cleanRow[statusKey]) ? cleanRow[statusKey].toUpperCase().trim() : "UNKNOWN";
+                        var lat = parseFloat(cleanRow[keys.find(k => k.includes('LATITUDE'))]);
+                        var lng = parseFloat(cleanRow[keys.find(k => k.includes('LONGITUDE'))]);
+                        var name = cleanRow[keys.find(k => k.includes('LOCATION'))] || "Unknown";
+                        var mun = cleanRow[keys.find(k => k.includes('MUNICAPLITY') || k.includes('MUNICIPALITY'))] || "Unknown";
+                        var type = (cleanRow[keys.find(k => k.includes('TYPE'))] || "EVACUATION CENTER").toUpperCase().trim();
+                        var total = cleanRow[keys.find(k => k.includes('TOTAL CAPACITY'))] || "0";
+                        var cur = cleanRow[keys.find(k => k.includes('CURRENTCAP') || k.includes('CURRENT CAP'))] || "0";
+                        var stat = (cleanRow[keys.find(k => k.includes('STATUS'))] || "UNKNOWN").toUpperCase().trim();
 
                         if (!isNaN(lat) && !isNaN(lng)) {
                             validPointsPlotted++;
-                            var badgeClass = (status === "AVAILABLE") ? "badge-available" : "badge-default";
+                            var badgeClass = (stat === "AVAILABLE") ? "badge-available" : "badge-default";
 
                             var popupText = `
                                 <div>
                                     <span class="card-title">${name}</span>
-                                    <div class="card-row">
-                                        <span class="card-label">Type</span>
-                                        <span class="card-value">${facilityType}</span>
-                                    </div>
-                                    <div class="card-row">
-                                        <span class="card-label">Municipality</span>
-                                        <span class="card-value">${mun}</span>
-                                    </div>
-                                    <div class="card-row">
-                                        <span class="card-label">Capacity (Cur / Tot)</span>
-                                        <span class="card-value">${currentCap} <span style="color:#cbd5e1; margin:0 4px;">/</span> ${totalCap}</span>
-                                    </div>
-                                    <div class="card-row">
-                                        <span class="card-label">Coordinates</span>
-                                        <span class="card-value" style="font-family: monospace; color: var(--text-muted);">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>
-                                    </div>
-                                    <div class="card-row" style="padding-top: 10px; margin-top: 4px;">
-                                        <span class="card-label">Status</span>
-                                        <span class="badge ${badgeClass}">${status}</span>
-                                    </div>
-                                </div>
-                            `;
+                                    <div class="card-row"><span class="card-label">Type</span><span class="card-value">${type}</span></div>
+                                    <div class="card-row"><span class="card-label">Municipality</span><span class="card-value">${mun}</span></div>
+                                    <div class="card-row"><span class="card-label">Capacity</span><span class="card-value">${cur} / ${total}</span></div>
+                                    <div class="card-row"><span class="card-label">Coordinates</span><span class="card-value" style="font-family:monospace; color:var(--text-muted);">${lat.toFixed(5)}, ${lng.toFixed(5)}</span></div>
+                                    <div class="card-row" style="padding-top:10px;"><span class="card-label">Status</span><span class="badge ${badgeClass}">${stat}</span></div>
+                                </div>`;
 
-                            // minWidth adjusted to 220 for a smaller box
-                            var marker = L.marker([lat, lng], { icon: evacIcon }).bindPopup(popupText, { minWidth: 220 });
-                            
-                            marker.searchData = { name: name, mun: mun, lat: lat, lng: lng, type: facilityType };
+                            var marker = L.marker([lat, lng], { icon: getIconForType(type) }).bindPopup(popupText, { minWidth: 220 });
+                            marker.searchData = { name: name, mun: mun, lat: lat, lng: lng, type: type };
                             marker.addTo(map);
                             markers.push(marker);
                         }
                     });
-
-                    if (validPointsPlotted === 0) {
-                        var headersFound = data.length > 0 ? Object.keys(data[0]).join(", ") : "No columns found";
-                        var htmlWarning = headersFound.includes("<") ? "<br><br><b style='color:#ef4444;'>ERROR: You pasted a standard Share link. You must use File > Share > Publish to Web.</b>" : "";
-                        
-                        document.getElementById('spinner-container').style.display = 'none';
-                        document.getElementById('loading-title').innerHTML = "⚠️ <b>Data Connection Failed</b>";
-                        document.getElementById('loading-desc').innerHTML = `
-                            We connected to your link, but could not read the coordinates.<br><br>
-                            <b>Here are the exact headers the code saw:</b><br>
-                            <div style='background:#f1f5f9; padding:8px; border-radius:4px; margin-top:8px; font-family:monospace; color:#ef4444; word-wrap:break-word; font-size:12px;'>
-                                ${headersFound}
-                            </div>
-                            ${htmlWarning}
-                        `;
-                    } else {
-                        document.getElementById('loading').style.display = 'none';
-                    }
-                },
-                error: function(err) {
-                    document.getElementById('spinner-container').style.display = 'none';
-                    document.getElementById('loading-title').innerHTML = "❌ <b>Network Blocked</b>";
-                    document.getElementById('loading-desc').innerHTML = "Could not reach the link. Make sure the sheet is public.";
+                    if (validPointsPlotted > 0) document.getElementById('loading').style.display = 'none';
                 }
             });
         }
 
         function filterMap() {
             var query = document.getElementById('searchInput').value.toLowerCase();
-            var selectedType = document.getElementById('typeFilter').value;
-            var foundAny = false;
+            var selType = document.getElementById('typeFilter').value;
             var firstMatch = null;
             
             markers.forEach(function(marker) {
-                var item = marker.searchData;
-                var matchesText = item.name.toLowerCase().includes(query) || item.mun.toLowerCase().includes(query);
-                var matchesType = (selectedType === "ALL") || (item.type === selectedType);
+                var itm = marker.searchData;
+                var mText = itm.name.toLowerCase().includes(query) || itm.mun.toLowerCase().includes(query);
+                var mType = (selType === "ALL") || (itm.type === selType);
 
-                if (matchesText && matchesType) {
+                if (mText && mType) {
                     map.addLayer(marker);
-                    foundAny = true;
-                    if (!firstMatch && query.trim() !== "") {
-                        firstMatch = marker;
-                    }
+                    if (!firstMatch && query.trim() !== "") firstMatch = marker;
                 } else {
                     map.removeLayer(marker);
                 }
             });
-
-            if (firstMatch) {
-                map.setView([firstMatch.searchData.lat, firstMatch.searchData.lng], 14);
-                firstMatch.openPopup();
-            } 
-            else if (!foundAny && query.trim() !== "") {
-                alert("No locations found matching your search and filter settings.");
-            }
+            if (firstMatch) { map.setView([firstMatch.searchData.lat, firstMatch.searchData.lng], 14); firstMatch.openPopup(); }
         }
 
-        document.getElementById('searchInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') filterMap();
-        });
-
+        document.getElementById('searchInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') filterMap(); });
         setTimeout(() => map.invalidateSize(), 500);
     </script>
 </body>
