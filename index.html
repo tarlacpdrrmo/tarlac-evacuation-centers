@@ -149,8 +149,8 @@
         }
         .legend-item:last-child { margin-bottom: 0; }
         .legend-icon {
-            width: 20px;
-            height: 20px;
+            width: 14px; /* Scaled down */
+            height: 14px; /* Scaled down */
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -209,7 +209,6 @@
         L.control.zoom({ position: 'topleft' }).addTo(map);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
-        // --- MAP LEGEND ---
         var legend = L.control({position: 'bottomright'});
         legend.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend');
@@ -226,9 +225,9 @@
                 html += `
                     <div class="legend-item">
                         <div class="legend-icon" style="background-color: ${cat.color};">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="white">${cat.svg}</svg>
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="white">${cat.svg}</svg>
                         </div>
-                        <span>${cat.name}</span>
+                        <span style="font-size: 11px;">${cat.name}</span>
                     </div>`;
             });
             div.innerHTML = html;
@@ -254,14 +253,15 @@
                 bgColor = '#ef4444'; 
             }
 
+            // Map icons significantly scaled down
             return L.divIcon({
-                html: `<div style="background-color: ${bgColor}; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white">${svgPath}</svg>
+                html: `<div style="background-color: ${bgColor}; color: white; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);">
+                          <svg width="8" height="8" viewBox="0 0 24 24" fill="white">${svgPath}</svg>
                        </div>`,
                 className: 'custom-evac-icon',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13],
-                popupAnchor: [0, -13]
+                iconSize: [18, 18],
+                iconAnchor: [9, 9],
+                popupAnchor: [0, -9]
             });
         }
 
