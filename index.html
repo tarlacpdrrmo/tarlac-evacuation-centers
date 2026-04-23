@@ -1,80 +1,97 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Evacuation Map</title>
+    <title>Dynamic Evacuation Map</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; font-family: Arial; }
-        
-        /* Top 70% for the Map */
-        #map { height: 70%; width: 100%; }
-        
-        /* Search Bar Floating on the Map */
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%; font-family: Arial, sans-serif; overflow: hidden; 
+        }
+        #map { 
+            height: 100vh; width: 100vw; z-index: 1; 
+        }
         #search-box {
             position: absolute; top: 15px; left: 55px; z-index: 999;
             background: white; padding: 10px; border-radius: 4px; box-shadow: 0 1px 5px rgba(0,0,0,0.4);
         }
+        #searchInput {
+            padding: 6px; width: 220px; border: 1px solid #ccc; border-radius: 3px;
+        }
+        #search-box button {
+            padding: 6px 10px; background-color: #2c3e50; color: white; border: none; border-radius: 3px; cursor: pointer;
+        }
+        #search-box button:hover { background-color: #1a252f; }
         
-        /* Bottom 30% for the Sheet */
-        #sheet { height: 30%; width: 100%; border-top: 2px solid #333; }
-        iframe { width: 100%; height: 100%; border: none; }
+        /* Loading Screen */
+        #loading {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 1000; background: rgba(255,255,255,0.9); padding: 20px; border-radius: 8px; font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
+    <div id="loading">Syncing live data from Google Sheets...</div>
+
     <div id="search-box">
-        <input type="text" id="searchInput" placeholder="Search...">
+        <input type="text" id="searchInput" placeholder="Search municipality or name...">
         <button onclick="searchMap()">Search</button>
     </div>
+
     <div id="map"></div>
 
-    <div id="sheet">
-        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQd_7XwY0Z_Dzs9THcJrXePJOdcchsr8XRGJ3B1E05RJR3j6Z-Y_8lak51-tM-znL2CIoOWwRP83tnM/pubhtml?gid=1609154454&single=true"></iframe>
-    </div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
     <script>
-        // 1. Setup Map
+        // 1. Setup Map - Centered on Tarlac
         var map = L.map('map').setView([15.58, 120.59], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-        // 2. Data
-        var data = [
-            { mun: "Lapaz", name: "PAGCOR Building", lat: 15.434096, lng: 120.727424 },
-            { mun: "Province of Tarlac", name: "Provincial Evacuation Center", lat: 15.494798, lng: 120.577911 },
-            { mun: "City of Tarlac", name: "Tibag Evacuation Center", lat: 15.490824, lng: 120.569726 },
-            { mun: "City of Tarlac", name: "Baras-Baras Evacuation Center", lat: 15.521644, lng: 120.567399 },
-            { mun: "San Clemente", name: "San Clemente Center", lat: 15.714959, lng: 120.358695 },
-            { mun: "Paniqui", name: "Bacao Center", lat: 15.686438, lng: 120.559574 },
-            { mun: "City of Tarlac", name: "San Isidro Center", lat: 15.701675, lng: 120.57702 },
-            { mun: "Moncada", name: "Sta. Lucia East", lat: 15.698746, lng: 120.584701 },
-            { mun: "Moncada", name: "Sta. Lucia West", lat: 15.700413, lng: 120.564336 }
-        ];
+        // ========================================================
+        // 🚨 IMPORTANT: PASTE YOUR CSV PUBLISH LINK BELOW 🚨
+        // ========================================================
+        var sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQd_7XwY0Z_Dzs9THcJrXePJOdcchsr8XRGJ3B1E05RJR3j6Z-Y_8lak51-tM-znL2CIoOWwRP83tnM/pubhtml?gid=1609154454&single=true";
+        
+        var markers = []; // Will hold our map pins
 
-        // 3. Add Markers
-        var markers = [];
-        data.forEach(function(loc) {
-            var marker = L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(`<b>${loc.name}</b><br>${loc.mun}`);
-            marker.searchData = loc;
-            markers.push(marker);
-        });
+        // 2. Fetch and Parse the Google Sheet dynamically
+        Papa.parse(sheetCsvUrl, {
+            download: true,
+            header: true, // Tells the parser to use your top row as variable names
+            skipEmptyLines: true,
+            complete: function(results) {
+                var data = results.data;
+                
+                data.forEach(function(row) {
+                    // Pulling exact column headers based on your spreadsheet screenshot
+                    var lat = parseFloat(row['LATITUDE']);
+                    var lng = parseFloat(row['LONGITUDE']);
+                    var name = row['LOCATION'];
+                    var mun = row['MUNICAPLITY/CITY']; // Using the exact spelling from your sheet
+                    var cap = row['TOTAL CAPACITY'];
+                    var status = row['Status'];
 
-        // 4. Search Function
-        function searchMap() {
-            var query = document.getElementById('searchInput').value.toLowerCase();
-            for (var i = 0; i < markers.length; i++) {
-                var item = markers[i].searchData;
-                if (item.name.toLowerCase().includes(query) || item.mun.toLowerCase().includes(query)) {
-                    map.setView([item.lat, item.lng], 14);
-                    markers[i].openPopup();
-                    return;
-                }
-            }
-            alert("Not found.");
-        }
+                    // Skip rows without coordinates
+                    if (isNaN(lat) || isNaN(lng)) return;
 
-        // 5. Fix Map Load Size
-        setTimeout(() => map.invalidateSize(), 500);
-    </script>
-</body>
-</html>
+                    var popupText = `
+                        <div style="font-size: 14px;">
+                            <strong style="font-size: 16px; display: block; margin-bottom: 5px;">${name}</strong>
+                            <b>Municipality:</b> ${mun}<br>
+                            <b>Capacity:</b> ${cap} persons<br>
+                            <b>Status:</b> <span style="color: green; font-weight: bold;">${status}</span><br>
+                        </div>
+                    `;
+
+                    var marker = L.marker([lat, lng]).addTo(map).bindPopup(popupText);
+                    
+                    // Save data to marker for the search function
+                    marker.searchData = { name: name, mun: mun, lat: lat, lng: lng };
+                    markers.push(marker);
+                });
+
+                // Hide the loading screen once points are plotted
+                document.getElementById('loading').style.
