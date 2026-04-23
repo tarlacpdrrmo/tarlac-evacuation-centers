@@ -6,28 +6,19 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; font-family: Arial, sans-serif; overflow: hidden; 
-        }
-        #map { 
-            height: 100vh; width: 100vw; z-index: 1; 
-        }
-        #search-box {
-            position: absolute; top: 15px; left: 55px; z-index: 999;
-            background: white; padding: 10px; border-radius: 4px; box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-        }
-        #searchInput {
-            padding: 6px; width: 220px; border: 1px solid #ccc; border-radius: 3px;
-        }
-        #search-box button {
-            padding: 6px 10px; background-color: #2c3e50; color: white; border: none; border-radius: 3px; cursor: pointer;
-        }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: Arial, sans-serif; overflow: hidden; }
+        #map { height: 100vh; width: 100vw; z-index: 1; }
+        #search-box { position: absolute; top: 15px; left: 55px; z-index: 999; background: white; padding: 10px; border-radius: 4px; box-shadow: 0 1px 5px rgba(0,0,0,0.4); }
+        #searchInput { padding: 6px; width: 220px; border: 1px solid #ccc; border-radius: 3px; }
+        #search-box button { padding: 6px 10px; background-color: #2c3e50; color: white; border: none; border-radius: 3px; cursor: pointer; }
         #search-box button:hover { background-color: #1a252f; }
         
-        /* Loading Screen */
+        /* Error & Loading Screen */
         #loading {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 1000; background: rgba(255,255,255,0.9); padding: 20px; border-radius: 8px; font-weight: bold;
+            z-index: 1000; background: white; padding: 20px 30px; border-radius: 8px; 
+            font-size: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 2px solid #2c3e50;
+            text-align: center; line-height: 1.5;
         }
     </style>
 </head>
@@ -46,52 +37,111 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <script>
-        // 1. Setup Map - Centered on Tarlac
+        // 1. AUTOMATIC ERROR CHECKER: Catches deleted quotation marks or syntax crashes
+        window.onerror = function(message, source, lineno) {
+            document.getElementById('loading').innerHTML = "❌ <b>CRITICAL CODE ERROR:</b><br>" + message + "<br><br><i>Did you accidentally delete a quotation mark on line " + lineno + "?</i>";
+            document.getElementById('loading').style.borderColor = "red";
+            return false;
+        };
+    </script>
+
+    <script>
+        // 2. Setup Map
         var map = L.map('map').setView([15.58, 120.59], 10);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-        // ========================================================
+        // =========================================================================
         // 🚨 IMPORTANT: PASTE YOUR CSV PUBLISH LINK BELOW 🚨
-        // ========================================================
+        // Keep the link perfectly inside the quote marks (" ")
+        // =========================================================================
         var sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQd_7XwY0Z_Dzs9THcJrXePJOdcchsr8XRGJ3B1E05RJR3j6Z-Y_8lak51-tM-znL2CIoOWwRP83tnM/pubhtml?gid=1609154454&single=true";
         
-        var markers = []; // Will hold our map pins
+        var markers = [];
 
-        // 2. Fetch and Parse the Google Sheet dynamically
-        Papa.parse(sheetCsvUrl, {
-            download: true,
-            header: true, // Tells the parser to use your top row as variable names
-            skipEmptyLines: true,
-            complete: function(results) {
-                var data = results.data;
-                
-                data.forEach(function(row) {
-                    // Pulling exact column headers based on your spreadsheet screenshot
-                    var lat = parseFloat(row['LATITUDE']);
-                    var lng = parseFloat(row['LONGITUDE']);
-                    var name = row['LOCATION'];
-                    var mun = row['MUNICAPLITY/CITY']; // Using the exact spelling from your sheet
-                    var cap = row['TOTAL CAPACITY'];
-                    var status = row['Status'];
-
-                    // Skip rows without coordinates
-                    if (isNaN(lat) || isNaN(lng)) return;
-
-                    var popupText = `
-                        <div style="font-size: 14px;">
-                            <strong style="font-size: 16px; display: block; margin-bottom: 5px;">${name}</strong>
-                            <b>Municipality:</b> ${mun}<br>
-                            <b>Capacity:</b> ${cap} persons<br>
-                            <b>Status:</b> <span style="color: green; font-weight: bold;">${status}</span><br>
-                        </div>
-                    `;
-
-                    var marker = L.marker([lat, lng]).addTo(map).bindPopup(popupText);
+        // 3. Built-in link validation before we try to pull the data
+        if (sheetCsvUrl === "YOUR_CSV_PUBLISH_LINK_HERE") {
+            document.getElementById('loading').innerHTML = "⚠️ <b>WAIT:</b> You forgot to paste your link into the code!<br>Replace 'YOUR_CSV_PUBLISH_LINK_HERE' with your actual link.";
+            document.getElementById('loading').style.borderColor = "red";
+        } 
+        else if (!sheetCsvUrl.toLowerCase().includes("csv")) {
+            document.getElementById('loading').innerHTML = "⚠️ <b>WRONG LINK FORMAT:</b><br>The link you pasted doesn't look like a CSV link.<br>Go to Google Sheets > File > Share > Publish to Web > select <b>Comma-separated values</b>.";
+            document.getElementById('loading').style.borderColor = "red";
+        } 
+        else {
+            // If the link looks good, fetch the data
+            Papa.parse(sheetCsvUrl, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    var data = results.data;
+                    var validPointsPlotted = 0;
                     
-                    // Save data to marker for the search function
-                    marker.searchData = { name: name, mun: mun, lat: lat, lng: lng };
-                    markers.push(marker);
-                });
+                    data.forEach(function(row) {
+                        var lat = parseFloat(row['LATITUDE']);
+                        var lng = parseFloat(row['LONGITUDE']);
+                        var name = row['LOCATION'] || "Unknown";
+                        var mun = row['MUNICAPLITY/CITY'] || "Unknown";
+                        var cap = row['TOTAL CAPACITY'] || "N/A";
+                        var status = row['Status'] || "Unknown";
 
-                // Hide the loading screen once points are plotted
-                document.getElementById('loading').style.
+                        // Only plot if coordinates are valid numbers
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            validPointsPlotted++;
+                            var popupText = `
+                                <div style="font-size: 14px;">
+                                    <strong style="font-size: 16px; display: block; margin-bottom: 5px;">${name}</strong>
+                                    <b>Municipality:</b> ${mun}<br>
+                                    <b>Capacity:</b> ${cap} persons<br>
+                                    <b>Status:</b> <span style="color: green; font-weight: bold;">${status}</span><br>
+                                </div>
+                            `;
+
+                            var marker = L.marker([lat, lng]).addTo(map).bindPopup(popupText);
+                            marker.searchData = { name: name, mun: mun, lat: lat, lng: lng };
+                            markers.push(marker);
+                        }
+                    });
+
+                    // Check if it pulled the file but found zero coordinates
+                    if (validPointsPlotted === 0) {
+                        document.getElementById('loading').innerHTML = "⚠️ <b>DATA MISMATCH:</b><br>Connected to your sheet, but couldn't find the coordinates.<br>Make sure your column headers are exactly <b>LATITUDE</b> and <b>LONGITUDE</b>.";
+                        document.getElementById('loading').style.borderColor = "red";
+                    } else {
+                        // Success! Hide the loading screen.
+                        document.getElementById('loading').style.display = 'none';
+                    }
+                },
+                error: function(err) {
+                    document.getElementById('loading').innerHTML = "❌ <b>NETWORK BLOCKED:</b><br>Could not read the link. Ensure the sheet is public and you are using the 'Publish to Web' CSV link.";
+                    document.getElementById('loading').style.borderColor = "red";
+                }
+            });
+        }
+
+        // 4. Search Function
+        function searchMap() {
+            var query = document.getElementById('searchInput').value.toLowerCase();
+            var found = false;
+            
+            for (var i = 0; i < markers.length; i++) {
+                var item = markers[i].searchData;
+                if (item.name.toLowerCase().includes(query) || item.mun.toLowerCase().includes(query)) {
+                    map.setView([item.lat, item.lng], 14);
+                    markers[i].openPopup();
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && query.trim() !== "") alert("Location not found.");
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') searchMap();
+        });
+
+        // 5. Layout Fix
+        setTimeout(() => map.invalidateSize(), 500);
+    </script>
+</body>
+</html>
