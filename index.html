@@ -15,8 +15,6 @@
         :root {
             --primary: #0f172a;
             --primary-hover: #334155;
-            --accent: #3b82f6;       /* New Modern Blue for Buttons */
-            --accent-hover: #2563eb;
             --surface: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
@@ -35,49 +33,42 @@
         
         #map { height: 100vh; width: 100vw; z-index: 1; }
         
-        /* Modern Floating Panel */
         #search-box { 
             position: absolute; top: 20px; left: 60px; z-index: 999; 
             background: rgba(255, 255, 255, 0.5); padding: 8px; 
             border-radius: 8px; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-            display: flex; gap: 8px; border: 1px solid var(--border);
+            display: flex; gap: 6px; border: 1px solid var(--border);
             backdrop-filter: blur(4px);
-            align-items: center; /* Ensures perfect vertical alignment */
         }
 
-        #typeFilter, #searchInput {
-            height: 32px; /* Locked height for perfect alignment */
-            padding: 0 10px; 
-            border: 1px solid var(--border); border-radius: 6px; 
+        #typeFilter {
+            padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; 
             font-family: 'Inter', sans-serif; font-size: 13px; outline: none;
-            background: rgba(255, 255, 255, 0.8); color: var(--text-main);
-            transition: all 0.2s ease; box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.8); color: var(--text-main); cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        #typeFilter { cursor: pointer; }
-        #typeFilter:focus, #searchInput:focus { 
-            border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.2); background: #ffffff; 
+        #typeFilter:focus { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.2); background: #ffffff; }
+        
+        #searchInput { 
+            padding: 6px 10px; width: 180px; 
+            border: 1px solid var(--border); border-radius: 6px; 
+            font-family: 'Inter', sans-serif; font-size: 13px;
+            transition: all 0.2s ease; outline: none;
+            background: rgba(255, 255, 255, 0.8);
         }
         
-        #searchInput { width: 180px; }
+        #searchInput:focus { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.2); background: #ffffff; }
         
-        /* New Smoother, Aligned Button */
         #search-box button { 
-            height: 32px; /* Locked height to match inputs */
-            padding: 0 16px; 
-            background-color: var(--accent); /* Modern Blue instead of Black */
+            padding: 6px 14px; background-color: var(--primary); 
             color: white; border: none; border-radius: 6px; 
-            font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; /* Smoother, bolder font */
-            cursor: pointer; transition: all 0.2s ease; box-sizing: border-box;
-            box-shadow: 0 1px 2px rgba(59, 130, 246, 0.3); /* Subtle blue glow/shadow */
+            font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+            cursor: pointer; transition: background-color 0.2s ease;
         }
         
-        #search-box button:hover { 
-            background-color: var(--accent-hover); 
-            transform: translateY(-1px); /* Smooth lifting effect on hover */
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
-        }
+        #search-box button:hover { background-color: var(--primary-hover); }
 
         #compass {
             position: absolute; top: 20px; right: 20px; z-index: 999;
@@ -130,6 +121,45 @@
             transform: scale(1.1);
         }
 
+        /* Modern Legend Styling */
+        .info.legend {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--border);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+        .legend-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .legend-item:last-child { margin-bottom: 0; }
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            margin-right: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -179,6 +209,33 @@
         L.control.zoom({ position: 'topleft' }).addTo(map);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
+        // --- MAP LEGEND ---
+        var legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            var categories = [
+                { name: "Evacuation Center", color: "#3b82f6", svg: '<path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>' },
+                { name: "School", color: "#f59e0b", svg: '<path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>' },
+                { name: "Church", color: "#8b5cf6", svg: '<path d="M13 2h-2v3H8v2h3v4H7v2h4v7h2v-7h4v-2h-4V7h3V5h-3V2z"/>' },
+                { name: "Covered Court", color: "#10b981", svg: '<path d="M12 2C6.5 2 2 6.5 2 12v10h20V12c0-5.5-4.5-10-10-10zm-2 18H6v-8h4v8zm10 0h-4v-8h4v8z"/>' },
+                { name: "Barangay Hall", color: "#ef4444", svg: '<path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-8h8v8z"/>' }
+            ];
+
+            var html = '<span class="legend-title">Facility Types</span>';
+            categories.forEach(function(cat) {
+                html += `
+                    <div class="legend-item">
+                        <div class="legend-icon" style="background-color: ${cat.color};">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="white">${cat.svg}</svg>
+                        </div>
+                        <span>${cat.name}</span>
+                    </div>`;
+            });
+            div.innerHTML = html;
+            return div;
+        };
+        legend.addTo(map);
+
         function getIconForType(type) {
             let svgPath = '<path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>'; 
             let bgColor = '#3b82f6'; 
@@ -216,7 +273,7 @@
         if (sheetCsvUrl === "YOUR_CSV_PUBLISH_LINK_HERE" || sheetCsvUrl === "") {
             document.getElementById('spinner-container').style.display = 'none';
             document.getElementById('loading-title').innerHTML = "⚠️ <b>Action Required:</b>";
-            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 180 of the code.";
+            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 214 of the code.";
         } else {
             Papa.parse(sheetCsvUrl, {
                 download: true, header: true, skipEmptyLines: true,
