@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evacuation Center Dashboard</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Fills the whole browser window */
+            overflow: hidden;
+        }
+        #map-wrapper {
+            position: relative;
+            flex: 1; /* Allows the map to take up all remaining space */
+            width: 100%;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+        }
+        #search-container {
+            position: absolute;
+            top: 20px;
+            left: 60px; /* Positioned right of map zoom controls */
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        #search-input {
+            width: 250px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #search-btn {
+            padding: 8px 12px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #search-btn:hover {
+            background-color: #1a252f;
+        }
+        #sheet-container {
+            height: 35vh; /* Takes up 35% of the screen height */
+            width: 100%;
+            border-top: 3px solid #2c3e50;
+            background: #f4f4f4;
+            z-index: 10;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map-wrapper">
+        <div id="search-container">
+            <input type="text" id="search-input" placeholder="Search municipality or location...">
+            <button id="search-btn" onclick="searchLocation()">Search</button>
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <div id="sheet-container">
+        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQd_7XwY0Z_Dzs9THcJrXePJOdcchsr8XRGJ3B1E05RJR3j6Z-Y_8lak51-tM-znL2CIoOWwRP83tnM/pub?gid=1609154454&single=true&output=csv"></iframe>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Initialize the map, centered roughly around Tarlac
+        var map = L.map('map').setView([15.58, 120.59], 10);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Evacuation Center Data extracted from the spreadsheet
+        var evacuationCenters = [
+            { mun: "Lapaz", name: "PAGCOR Multi-Purpose Building and Municipal Evacuation Center/ Brgy. Rizal, La Paz", lat: 15.434096, lng: 120.727424, cap: 150, status: "AVAILABLE" },
+            { mun: "Province of Tarlac", name: "Provincial Multi-Purpose Evacuation Center/ Brgy. San Isidro, Tarlac City", lat: 15.494798, lng: 120.577911, cap: 530, status: "AVAILABLE" },
+            { mun: "City of Tarlac (Capital)", name: "Tibag Evacuation Center/ Brgy. Tibag, Tarlac City", lat: 15.490824, lng: 120.569726, cap: 530, status: "AVAILABLE" },
+            { mun: "City of Tarlac (Capital)", name: "Baras-Baras Evacuation Center/ Brgy. Baras-Baras, Tarlac City", lat: 15.521644, lng: 120.567399, cap: 165, status: "AVAILABLE" },
+            { mun: "San Clemente", name: "San Clemente Municipal Evacuation Center/ Brgy. Poblacion Norte, San Clemente", lat: 15.714959, lng: 120.358695, cap: 30, status: "AVAILABLE" },
+            { mun: "Paniqui", name: "Bacao Evacuation Center/ Sitio Bacao, Brgy. Salumague, Paniqui", lat: 15.686438, lng: 120.559574, cap: 1000, status: "AVAILABLE" },
+            { mun: "City of Tarlac (Capital)", name: "San Isidro Evacuation Center/ Brgy. San Isidro, Paniqui", lat: 15.701675, lng: 120.57702, cap: 800, status: "AVAILABLE" },
+            { mun: "Moncada", name: "Sta. Lucia East", lat: 15.698746, lng: 120.584701, cap: 800, status: "AVAILABLE" },
+            { mun: "Moncada", name: "Sta. Lucia West", lat: 15.700413, lng: 120.564336, cap: 800, status: "AVAILABLE" }
+        ];
+
+        // Array to hold marker references for the search function
+        var markers = [];
+
+        // Loop through data and add markers to the map
+        evacuationCenters.forEach(function(center) {
+            var popupContent = `
+                <b>${center.name}</b><br>
+                Municipality: ${center.mun}<br>
+                Capacity: ${center.cap}<br>
+                Status: <span style="color:green; font-weight:bold;">${center.status}</span>
+            `;
+            
+            var marker = L.marker([center.lat, center.lng]).addTo(map).bindPopup(popupContent);
+            
+            // Store data inside the marker object for searching
+            marker.featureData = center;
+            markers.push(marker);
+        });
+
+        // Search Functionality
+        function searchLocation() {
+            var query = document.getElementById('search-input').value.toLowerCase();
+            var found = false;
+
+            for (var i = 0; i < markers.length; i++) {
+                var data = markers[i].featureData;
+                
+                // Check if search query matches the municipality or specific location name
+                if (data.name.toLowerCase().includes(query) || data.mun.toLowerCase().includes(query)) {
+                    // Zoom to the location and open the popup
+                    map.setView([data.lat, data.lng], 14);
+                    markers[i].openPopup();
+                    found = true;
+                    break; // Stop after first match
+                }
+            }
+
+            if (!found && query.trim() !== "") {
+                alert("Location not found. Try searching for a municipality like 'Moncada' or 'Paniqui'.");
+            }
+        }
+
+        // Add Enter key support for the search bar
+        document.getElementById('search-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                searchLocation();
+            }
+        });
+    </script>
+</body>
+</html>
