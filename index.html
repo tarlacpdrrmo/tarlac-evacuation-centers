@@ -149,8 +149,8 @@
         }
         .legend-item:last-child { margin-bottom: 0; }
         .legend-icon {
-            width: 14px; /* Scaled down */
-            height: 14px; /* Scaled down */
+            width: 14px; 
+            height: 14px; 
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -187,6 +187,7 @@
             <option value="CHURCH">Church</option>
             <option value="COVERED COURT">Covered Court</option>
             <option value="BARANGAY HALL">Barangay Hall</option>
+            <option value="HOSPITAL">Hospital</option>
         </select>
         <input type="text" id="searchInput" placeholder="Search municipality or name...">
         <button onclick="filterMap()">Search</button>
@@ -217,7 +218,8 @@
                 { name: "School", color: "#f59e0b", svg: '<path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>' },
                 { name: "Church", color: "#8b5cf6", svg: '<path d="M13 2h-2v3H8v2h3v4H7v2h4v7h2v-7h4v-2h-4V7h3V5h-3V2z"/>' },
                 { name: "Covered Court", color: "#10b981", svg: '<path d="M12 2C6.5 2 2 6.5 2 12v10h20V12c0-5.5-4.5-10-10-10zm-2 18H6v-8h4v8zm10 0h-4v-8h4v8z"/>' },
-                { name: "Barangay Hall", color: "#ef4444", svg: '<path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-8h8v8z"/>' }
+                { name: "Barangay Hall", color: "#ef4444", svg: '<path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-8h8v8z"/>' },
+                { name: "Hospital", color: "#ec4899", svg: '<path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 9h-4v4h-2v-4H7v-2h4V6h2v4h4v2z"/>' }
             ];
 
             var html = '<span class="legend-title">Facility Types</span>';
@@ -251,9 +253,12 @@
             } else if (type === 'BARANGAY HALL') {
                 svgPath = '<path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-8h8v8z"/>';
                 bgColor = '#ef4444'; 
+            } else if (type === 'HOSPITAL') {
+                // New Medical Cross Icon for Hospital
+                svgPath = '<path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 9h-4v4h-2v-4H7v-2h4V6h2v4h4v2z"/>';
+                bgColor = '#ec4899'; // Pink/Rose
             }
 
-            // Map icons significantly scaled down
             return L.divIcon({
                 html: `<div style="background-color: ${bgColor}; color: white; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);">
                           <svg width="8" height="8" viewBox="0 0 24 24" fill="white">${svgPath}</svg>
@@ -273,7 +278,7 @@
         if (sheetCsvUrl === "YOUR_CSV_PUBLISH_LINK_HERE" || sheetCsvUrl === "") {
             document.getElementById('spinner-container').style.display = 'none';
             document.getElementById('loading-title').innerHTML = "⚠️ <b>Action Required:</b>";
-            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 214 of the code.";
+            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 215 of the code.";
         } else {
             Papa.parse(sheetCsvUrl, {
                 download: true, header: true, skipEmptyLines: true,
