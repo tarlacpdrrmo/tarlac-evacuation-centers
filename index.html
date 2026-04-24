@@ -147,8 +147,7 @@
             z-index: 1000; background: var(--surface); padding: 24px 32px; 
             border-radius: 16px; font-size: 15px; color: var(--text-main);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); 
-            border: 1px solid var(--border); text-align: center; line-height: 1.6;
-            max-width: 600px;
+            border: 1px solid var(--border); text-align: center; line-height: 1.6; max-width: 600px;
         }
 
         .leaflet-bar { box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; border: 1px solid var(--border) !important; border-radius: 6px !important; overflow: hidden; }
@@ -184,7 +183,7 @@
         .legend-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; display: block; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
         .legend-item { display: flex; align-items: center; margin-bottom: 8px; font-size: 12px; font-weight: 500; }
         .legend-item:last-child { margin-bottom: 0; }
-        .legend-icon { width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); margin-right: 10px; }
+        .legend-icon { width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); margin-right: 10px; overflow: hidden; }
 
         .leaflet-control-scale-line {
             background: rgba(255, 255, 255, 0.85) !important; backdrop-filter: blur(4px) !important;
@@ -197,6 +196,7 @@
             border-top: 2px solid var(--primary) !important; border-bottom: none !important;
             border-radius: 4px 4px 0 0 !important; margin-top: 4px !important;
         }
+
     </style>
 </head>
 <body>
@@ -278,13 +278,12 @@
             }
         });
 
-        // Initialize Map with Hardware Acceleration
         var map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([15.58, 120.59], 10);
         L.control.zoom({ position: 'topleft' }).addTo(map);
         L.control.scale({ imperial: true, metric: true, position: 'bottomleft' }).addTo(map);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
-        // Map Legend (Includes Flood Hazard)
+        // Map Legend Updated with Graduated Color Bar
         var legend = L.control({position: 'bottomright'});
         legend.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend');
@@ -295,7 +294,8 @@
                 { name: "Covered Court", color: "#10b981", svg: '<path d="M12 2C6.5 2 2 6.5 2 12v10h20V12c0-5.5-4.5-10-10-10zm-2 18H6v-8h4v8zm10 0h-4v-8h4v8z"/>' },
                 { name: "Barangay Hall", color: "#ef4444", svg: '<path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-8h8v8z"/>' },
                 { name: "Hospital", color: "#ec4899", svg: '<path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 9h-4v4h-2v-4H7v-2h4V6h2v4h4v2z"/>' },
-                { name: "Flood Hazard", color: "rgba(14, 165, 233, 0.4)", stroke: "transparent", svg: '<circle cx="12" cy="12" r="8" fill="#0ea5e9" opacity="0.8"/>'}
+                // Graduated Legend Entry
+                { name: "Flood Hazard (Low - High)", color: "transparent", stroke: "transparent", svg: '<defs><linearGradient id="floodGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#93c5fd" /><stop offset="100%" stop-color="#1e3a8a" /></linearGradient></defs><rect x="0" y="0" width="24" height="24" fill="url(#floodGrad)"/>'}
             ];
 
             var html = '<span class="legend-title">Facility Types</span>';
@@ -304,7 +304,7 @@
                 html += `
                     <div class="legend-item">
                         <div class="legend-icon" style="background-color: ${cat.color}; border: ${cat.stroke ? (cat.stroke === "transparent" ? 'none' : '1px solid '+cat.stroke) : '1px solid white'};">
-                            <svg width="8" height="8" viewBox="0 0 24 24" ${strokeAttr}>${cat.svg}</svg>
+                            <svg width="10" height="10" viewBox="0 0 24 24" ${strokeAttr}>${cat.svg}</svg>
                         </div>
                         <span style="font-size: 11px;">${cat.name}</span>
                     </div>`;
@@ -351,26 +351,23 @@
         // =========================================================================
         // 🚨 IMPORTANT: PASTE YOUR CSV PUBLISH LINK BELOW 🚨
         // =========================================================================
-        var sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQd_7XwY0Z_Dzs9THcJrXePJOdcchsr8XRGJ3B1E05RJR3j6Z-Y_8lak51-tM-znL2CIoOWwRP83tnM/pub?gid=1609154454&single=true&output=csv"; // ONLY Sheet 2 is needed now
+        var sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQd_7XwY0Z_Dzs9THcJrXePJOdcchsr8XRGJ3B1E05RJR3j6Z-Y_8lak51-tM-znL2CIoOWwRP83tnM/pub?gid=1609154454&single=true&output=csv"; 
         
         if (sheetCsvUrl.includes("pubhtml")) sheetCsvUrl = sheetCsvUrl.replace("pubhtml", "pub?output=csv");
         
         var markers = [];
 
-        // =========================================================================
-        // ZERO-PROCESSING RASTER TILE LAYER FOR FLOOD HAZARD
-        // This expects the 'flood_tiles' folder to be in the exact same directory as your index.html
-        // =========================================================================
+        // Raster Tile Layer pointing to your exported QGIS tiles
         var floodLayer = L.tileLayer('flood_tiles/{z}/{x}/{y}.png', {
             maxZoom: 16,
             minZoom: 10,
-            opacity: 0.8 // You can adjust the overall transparency of the flood layer here
+            opacity: 0.85 
         });
 
         if (sheetCsvUrl === "YOUR_SHEET_2_CSV_PUBLISH_LINK_HERE" || sheetCsvUrl === "") {
             document.getElementById('spinner-container').style.display = 'none';
             document.getElementById('loading-title').innerHTML = "⚠️ <b>Action Required:</b>";
-            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 388 of the code.";
+            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 389 of the code.";
         } else {
             Papa.parse(sheetCsvUrl, {
                 download: true, header: true, skipEmptyLines: true,
@@ -419,13 +416,8 @@
                             var marker = L.marker([lat, lng], { icon: iconData.icon }).bindPopup(popupText, { minWidth: 220 });
                             
                             var bufferCircle = L.circle([lat, lng], {
-                                radius: 1000, 
-                                color: iconData.color, 
-                                opacity: 0.7, 
-                                weight: 2,
-                                fillColor: iconData.color, 
-                                fillOpacity: 0.2, 
-                                interactive: false 
+                                radius: 1000, color: iconData.color, opacity: 0.7, weight: 2,
+                                fillColor: iconData.color, fillOpacity: 0.2, interactive: false 
                             });
 
                             marker.searchData = { name: name, mun: mun, lat: lat, lng: lng, type: type };
@@ -467,11 +459,9 @@
             var currentZoom = map.getZoom();
             var firstMatch = null;
             
-            // Buffer Hazard Toggle Logic
             var isBufferEnabled = document.getElementById('bufferToggle').checked;
             var showBuffers = isBufferEnabled && (currentZoom >= 14); 
             
-            // Raster Tile Flood Hazard Toggle Logic
             var isFloodEnabled = document.getElementById('floodToggle').checked;
             if (isFloodEnabled) { 
                 if (!map.hasLayer(floodLayer)) map.addLayer(floodLayer); 
@@ -504,7 +494,6 @@
         }
 
         document.getElementById('searchInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') filterMap(); });
-        
         map.on('zoomend', function() { filterMap(); });
 
         setTimeout(() => map.invalidateSize(), 500);
