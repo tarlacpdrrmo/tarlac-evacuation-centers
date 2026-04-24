@@ -85,6 +85,7 @@
             max-width: 600px;
         }
 
+        /* Leaflet Overrides */
         .leaflet-bar {
             box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
             border: 1px solid var(--border) !important;
@@ -114,12 +115,8 @@
         .badge-available { background-color: var(--success-bg); color: var(--success-text); }
         .badge-default { background-color: #f1f5f9; color: #475569; }
 
-        .custom-evac-icon div {
-            transition: transform 0.2s ease;
-        }
-        .custom-evac-icon div:hover {
-            transform: scale(1.1);
-        }
+        .custom-evac-icon div { transition: transform 0.2s ease; }
+        .custom-evac-icon div:hover { transform: scale(1.1); }
 
         .info.legend {
             background: rgba(255, 255, 255, 0.85);
@@ -139,24 +136,35 @@
             border-bottom: 1px solid var(--border);
             padding-bottom: 6px;
         }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 12px;
-            font-weight: 500;
-        }
+        .legend-item { display: flex; align-items: center; margin-bottom: 8px; font-size: 12px; font-weight: 500; }
         .legend-item:last-child { margin-bottom: 0; }
         .legend-icon {
-            width: 14px; 
-            height: 14px; 
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            margin-right: 10px;
+            width: 14px; height: 14px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); margin-right: 10px;
+        }
+
+        /* Modern Smoother Map Scale Override */
+        .leaflet-control-scale-line {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(4px) !important;
+            border: 2px solid var(--primary) !important;
+            border-top: none !important;
+            border-radius: 0 0 4px 4px !important;
+            color: var(--text-main) !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            text-shadow: none !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            padding: 4px 6px !important;
+            line-height: 1.2 !important;
+        }
+        .leaflet-control-scale-line:not(:first-child) {
+            border-top: 2px solid var(--primary) !important;
+            border-bottom: none !important;
+            border-radius: 4px 4px 0 0 !important;
+            margin-top: 4px !important;
         }
 
     </style>
@@ -208,7 +216,6 @@
         var map = L.map('map', { zoomControl: false }).setView([15.58, 120.59], 10);
         L.control.zoom({ position: 'topleft' }).addTo(map);
         
-        // Adds the dynamic scale line to the bottom left so user knows their current scale
         L.control.scale({ imperial: true, metric: true, position: 'bottomleft' }).addTo(map);
         
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
@@ -240,7 +247,6 @@
         };
         legend.addTo(map);
 
-        // Helper function to return both the HTML icon and the base Hex color for the buffer
         function getIconDataForType(type) {
             let svgPath = '<path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>'; 
             let bgColor = '#3b82f6'; 
@@ -283,7 +289,7 @@
         if (sheetCsvUrl === "YOUR_CSV_PUBLISH_LINK_HERE" || sheetCsvUrl === "") {
             document.getElementById('spinner-container').style.display = 'none';
             document.getElementById('loading-title').innerHTML = "⚠️ <b>Action Required:</b>";
-            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 223 of the code.";
+            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 254 of the code.";
         } else {
             Papa.parse(sheetCsvUrl, {
                 download: true, header: true, skipEmptyLines: true,
@@ -327,28 +333,23 @@
                                     <div class="card-row" style="padding-top:10px;"><span class="card-label">Status</span><span class="badge ${badgeClass}">${stat}</span></div>
                                 </div>`;
 
-                            // Fetch icon and specific color code for this facility type
                             var iconData = getIconDataForType(type);
                             
-                            // Generate the actual marker
                             var marker = L.marker([lat, lng], { icon: iconData.icon }).bindPopup(popupText, { minWidth: 220 });
                             
-                            // Generate the 5KM Buffer Circle with strict transparency rules
                             var bufferCircle = L.circle([lat, lng], {
-                                radius: 5000, // 5 KM in meters
-                                color: iconData.color, // Outline matches marker
-                                opacity: 0.7, // 70% Outline Transparency
+                                radius: 1000, // Reduced to 1 KM (1000 meters)
+                                color: iconData.color, 
+                                opacity: 0.7, 
                                 weight: 2,
-                                fillColor: iconData.color, // Fill matches marker
-                                fillOpacity: 0.4, // 40% Fill Transparency
-                                interactive: false // Prevents the circle from blocking clicks on the map
+                                fillColor: iconData.color, 
+                                fillOpacity: 0.2, // Increased transparency to 20%
+                                interactive: false 
                             });
 
-                            // Store data and the buffer circle together
                             marker.searchData = { name: name, mun: mun, lat: lat, lng: lng, type: type };
                             marker.bufferCircle = bufferCircle;
                             
-                            // Add marker to map
                             marker.addTo(map);
                             markers.push(marker);
                         }
@@ -356,7 +357,7 @@
                     
                     if (validPointsPlotted > 0) {
                         document.getElementById('loading').style.display = 'none';
-                        filterMap(); // Run filter once on load to establish buffer states
+                        filterMap(); 
                     } else {
                         document.getElementById('spinner-container').style.display = 'none';
                         document.getElementById('loading-title').innerHTML = "⚠️ <b>Data Connection Failed</b>";
@@ -372,8 +373,6 @@
             var currentZoom = map.getZoom();
             var firstMatch = null;
             
-            // Determine if we are zoomed in enough to show the 5KM scale buffers
-            // Zoom Level 14 is the standard threshold for the ~300ft visual scale bracket
             var showBuffers = currentZoom >= 14; 
             
             markers.forEach(function(marker) {
@@ -384,7 +383,6 @@
                 if (mText && mType) {
                     map.addLayer(marker);
                     
-                    // Show buffer only if marker is visible AND we are zoomed in far enough
                     if (showBuffers) {
                         map.addLayer(marker.bufferCircle);
                     } else {
@@ -394,17 +392,15 @@
                     if (!firstMatch && query.trim() !== "") firstMatch = marker;
                 } else {
                     map.removeLayer(marker);
-                    map.removeLayer(marker.bufferCircle); // Hide buffer if marker is filtered out
+                    map.removeLayer(marker.bufferCircle); 
                 }
             });
             
             if (firstMatch) { map.setView([firstMatch.searchData.lat, firstMatch.searchData.lng], 14); firstMatch.openPopup(); }
         }
 
-        // Search Listeners
         document.getElementById('searchInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') filterMap(); });
         
-        // Zoom Listener: Triggers the filter engine to dynamically show/hide buffers as you scroll
         map.on('zoomend', function() {
             filterMap();
         });
