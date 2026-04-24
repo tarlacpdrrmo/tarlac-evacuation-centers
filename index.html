@@ -79,10 +79,19 @@
 
         /* Modern Toggle Switch Styling */
         .toggle-container {
-            display: flex; align-items: center; gap: 6px; padding: 0 6px 0 4px; height: 32px;
+            display: flex; align-items: center; gap: 8px; padding: 0 6px 0 8px; height: 32px;
             border-left: 1px solid rgba(0,0,0,0.1); margin-left: 2px;
         }
-        .toggle-label { font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; }
+        
+        /* Updated Smoother Font Styling for BUFFER ZONE */
+        .toggle-label { 
+            font-size: 11px; 
+            font-weight: 600; 
+            color: var(--text-main); 
+            cursor: pointer; 
+            letter-spacing: 0.5px; 
+        }
+        
         .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
@@ -211,7 +220,7 @@
                 <input type="checkbox" id="bufferToggle" onchange="filterMap()" checked>
                 <span class="slider"></span>
             </label>
-            <label for="bufferToggle" class="toggle-label">1KM Buffer</label>
+            <label for="bufferToggle" class="toggle-label">BUFFER ZONE</label>
         </div>
     </div>
 
@@ -302,7 +311,7 @@
         if (sheetCsvUrl === "YOUR_CSV_PUBLISH_LINK_HERE" || sheetCsvUrl === "") {
             document.getElementById('spinner-container').style.display = 'none';
             document.getElementById('loading-title').innerHTML = "⚠️ <b>Action Required:</b>";
-            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 288 of the code.";
+            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 289 of the code.";
         } else {
             Papa.parse(sheetCsvUrl, {
                 download: true, header: true, skipEmptyLines: true,
@@ -386,10 +395,8 @@
             var currentZoom = map.getZoom();
             var firstMatch = null;
             
-            // Check if the physical toggle switch is turned ON
             var isBufferEnabled = document.getElementById('bufferToggle').checked;
             
-            // Buffer only shows if toggle is ON *and* the zoom scale is 14 or higher
             var showBuffers = isBufferEnabled && (currentZoom >= 14); 
             
             markers.forEach(function(marker) {
