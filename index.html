@@ -13,7 +13,7 @@
     
     <style>
         :root {
-            /* Dark sleek palette matching your screenshots */
+            /* Dark sleek palette matching your modern UI */
             --panel-bg: rgba(63, 73, 88, 0.95);
             --panel-border: rgba(255, 255, 255, 0.1);
             --input-bg: #273142;
@@ -23,8 +23,10 @@
             --accent-hover: #dc2626;
             --blue-accent: #3b82f6;
             --surface: #ffffff;
-            --success-bg: #dcfce7;
-            --success-text: #166534;
+            --success-bg: rgba(34, 197, 94, 0.2);
+            --success-text: #4ade80;
+            --default-bg: rgba(148, 163, 184, 0.2);
+            --default-text: #cbd5e1;
         }
 
         body, html { 
@@ -163,49 +165,72 @@
         }
 
         /* -------------------------------------------
-           Popups & Legends
+           Sleek Glassmorphic Popups
         ---------------------------------------------- */
-        .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); padding: 0; border: 1px solid #e2e8f0; }
-        .leaflet-popup-content { margin: 16px; font-family: 'Inter', sans-serif; }
-        .card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 10px; display: block; line-height: 1.3; }
-        .card-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 11px; }
-        .card-row:last-child { border-bottom: none; }
-        .card-label { color: #64748b; font-weight: 600; }
-        .card-value { color: #0f172a; font-weight: 600; text-align: right; }
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge-available { background-color: var(--success-bg); color: var(--success-text); }
-        .badge-default { background-color: #f1f5f9; color: #475569; }
-
-        .info.legend {
-            background: var(--surface); padding: 16px 20px; border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
-            border: 1px solid #e2e8f0; font-family: 'Inter', sans-serif; color: #0f172a;
-            transition: all 0.3s ease;
+        .leaflet-popup-content-wrapper { 
+            background: var(--panel-bg); 
+            color: var(--text-main);
+            border-radius: 12px; 
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4); 
+            padding: 0; 
+            border: 1px solid var(--panel-border); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
-        .info.legend:hover { transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.2); }
-        .legend-title { font-size: 12px; font-weight: 700; margin-bottom: 12px; display: block; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b;}
-        .legend-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 12px; font-weight: 600; transition: transform 0.2s ease;}
+        .leaflet-popup-tip { background: #3f4958; border: 1px solid var(--panel-border); box-shadow: none; }
+        .leaflet-popup-content { margin: 16px; font-family: 'Inter', sans-serif; }
+        .card-title { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; display: block; line-height: 1.3; }
+        .card-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px; }
+        .card-row:last-child { border-bottom: none; }
+        .card-label { color: var(--text-muted); font-weight: 600; }
+        .card-value { color: var(--text-main); font-weight: 600; text-align: right; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-available { background-color: var(--success-bg); color: var(--success-text); border: 1px solid rgba(74, 222, 128, 0.2); }
+        .badge-default { background-color: var(--default-bg); color: var(--default-text); border: 1px solid rgba(255,255,255,0.1); }
+
+        .leaflet-container a.leaflet-popup-close-button { color: var(--text-muted); padding: 8px; transition: color 0.2s ease;}
+        .leaflet-container a.leaflet-popup-close-button:hover { color: var(--text-main); }
+
+        /* -------------------------------------------
+           Live Summary Panel (Legend)
+        ---------------------------------------------- */
+        .info.legend {
+            background: var(--panel-bg); padding: 16px 20px; border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border); font-family: 'Inter', sans-serif; color: var(--text-main);
+            transition: all 0.3s ease; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            min-width: 200px;
+        }
+        .info.legend:hover { transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4); }
+        .legend-title { 
+            font-size: 11px; font-weight: 700; margin-bottom: 14px; display: block; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; 
+            text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);
+        }
+        .legend-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 12px; font-weight: 600; transition: transform 0.2s ease;}
         .legend-item:hover { transform: translateX(4px); }
         .legend-item:last-child { margin-bottom: 0; }
-        .legend-icon { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-right: 12px; }
+        .legend-left { display: flex; align-items: center; }
+        .legend-icon { width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-right: 12px; border: 1px solid rgba(255,255,255,0.2); }
+        
+        .legend-count {
+            background: var(--input-bg); padding: 2px 8px; border-radius: 12px;
+            font-size: 11px; color: var(--text-main); font-weight: 700;
+            border: 1px solid var(--panel-border); box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
 
         .custom-evac-icon div { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .custom-evac-icon div:hover { transform: scale(1.15) translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
 
-        /* -------------------------------------------
-           Smooth Buffer Animation CSS
-        ---------------------------------------------- */
-        .buffer-anim {
-            transition: fill-opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                        stroke-opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
+        .buffer-anim { transition: fill-opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), stroke-opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important; }
 
         #loading {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 1000; background: var(--surface); padding: 24px 32px; 
-            border-radius: 16px; font-size: 15px; color: #0f172a;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); 
-            border: 1px solid #e2e8f0; text-align: center; line-height: 1.6; max-width: 600px;
+            z-index: 1000; background: var(--panel-bg); padding: 24px 32px; 
+            border-radius: 16px; font-size: 15px; color: var(--text-main);
+            box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.5); 
+            border: 1px solid var(--panel-border); text-align: center; line-height: 1.6; max-width: 600px;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
     </style>
 </head>
@@ -216,7 +241,7 @@
             <svg style="animation: spin 1s linear infinite; height: 24px; width: 24px; color: #3b82f6; margin: 0 auto;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
         </div>
         <strong id="loading-title">Syncing Live Data</strong><br>
-        <span id="loading-desc" style="color: #64748b; font-size: 13px;">Pulling from Google Sheets...</span>
+        <span id="loading-desc" style="color: var(--text-muted); font-size: 13px;">Pulling from Google Sheets...</span>
     </div>
 
     <script>
@@ -278,32 +303,36 @@
             }
         });
 
-        // CartoDB Positron Basemap
+        // Clean CartoDB Positron Basemap
         var map = L.map('map', { zoomControl: false }).setView([15.58, 120.59], 10);
         L.control.zoom({ position: 'topleft' }).addTo(map);
         L.control.scale({ imperial: true, metric: true, position: 'bottomleft' }).addTo(map);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
+        // Integrated Summary Panel Legend
         var legend = L.control({position: 'bottomright'});
         legend.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend');
             var categories = [
-                { name: "Evacuation Center", color: "#3b82f6", svg: '<path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>' },
-                { name: "School", color: "#f59e0b", svg: '<path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>' },
-                { name: "Church", color: "#8b5cf6", svg: '<path d="M13 2h-2v3H8v2h3v4H7v2h4v7h2v-7h4v-2h-4V7h3V5h-3V2z"/>' },
-                { name: "Covered Court", color: "#10b981", svg: '<path d="M12 2C6.5 2 2 6.5 2 12v10h20V12c0-5.5-4.5-10-10-10zm-2 18H6v-8h4v8zm10 0h-4v-8h4v8z"/>' },
-                { name: "Barangay Hall", color: "#ef4444", svg: '<path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-8h8v8z"/>' },
-                { name: "Hospital", color: "#ec4899", svg: '<path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 9h-4v4h-2v-4H7v-2h4V6h2v4h4v2z"/>' }
+                { name: "Evacuation Center", id: "EVACUATION CENTER", color: "#3b82f6", svg: '<path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>' },
+                { name: "School", id: "SCHOOL", color: "#f59e0b", svg: '<path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>' },
+                { name: "Church", id: "CHURCH", color: "#8b5cf6", svg: '<path d="M13 2h-2v3H8v2h3v4H7v2h4v7h2v-7h4v-2h-4V7h3V5h-3V2z"/>' },
+                { name: "Covered Court", id: "COVERED COURT", color: "#10b981", svg: '<path d="M12 2C6.5 2 2 6.5 2 12v10h20V12c0-5.5-4.5-10-10-10zm-2 18H6v-8h4v8zm10 0h-4v-8h4v8z"/>' },
+                { name: "Barangay Hall", id: "BARANGAY HALL", color: "#ef4444", svg: '<path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-8h8v8z"/>' },
+                { name: "Hospital", id: "HOSPITAL", color: "#ec4899", svg: '<path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 9h-4v4h-2v-4H7v-2h4V6h2v4h4v2z"/>' }
             ];
 
-            var html = '<span class="legend-title">Facility Types</span>';
+            var html = '<span class="legend-title">Live Infrastructure Count</span>';
             categories.forEach(function(cat) {
                 html += `
                     <div class="legend-item">
-                        <div class="legend-icon" style="background-color: ${cat.color};">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="white">${cat.svg}</svg>
+                        <div class="legend-left">
+                            <div class="legend-icon" style="background-color: ${cat.color};">
+                                <svg width="8" height="8" viewBox="0 0 24 24" fill="white">${cat.svg}</svg>
+                            </div>
+                            <span>${cat.name}</span>
                         </div>
-                        <span>${cat.name}</span>
+                        <span class="legend-count" id="count-${cat.id.replace(/\s+/g, '-')}">0</span>
                     </div>`;
             });
             div.innerHTML = html;
@@ -353,12 +382,12 @@
         if (sheetCsvUrl.includes("pubhtml")) sheetCsvUrl = sheetCsvUrl.replace("pubhtml", "pub?output=csv");
         
         var markers = [];
-        var currentActiveMarker = null; // Keeps track of which pin is currently clicked
+        var currentActiveMarker = null;
 
         if (sheetCsvUrl === "YOUR_SHEET_2_CSV_PUBLISH_LINK_HERE" || sheetCsvUrl === "") {
             document.getElementById('spinner-container').style.display = 'none';
             document.getElementById('loading-title').innerHTML = "⚠️ <b>Action Required:</b>";
-            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 395 of the code.";
+            document.getElementById('loading-desc').innerHTML = "Please paste your Google Sheets link into line 416 of the code.";
         } else {
             Papa.parse(sheetCsvUrl, {
                 download: true, header: true, skipEmptyLines: true,
@@ -392,14 +421,15 @@
                             validPointsPlotted++;
                             var badgeClass = (stat === "AVAILABLE") ? "badge-available" : "badge-default";
 
+                            // Dark theme popup injected here
                             var popupText = `
                                 <div>
                                     <span class="card-title">${name}</span>
                                     <div class="card-row"><span class="card-label">Type</span><span class="card-value">${type}</span></div>
                                     <div class="card-row"><span class="card-label">Municipality</span><span class="card-value">${mun}</span></div>
                                     <div class="card-row"><span class="card-label">Capacity</span><span class="card-value">${cur} / ${total}</span></div>
-                                    <div class="card-row"><span class="card-label">Coordinates</span><span class="card-value" style="font-family:monospace; color:var(--text-muted);">${lat.toFixed(5)}, ${lng.toFixed(5)}</span></div>
-                                    <div class="card-row" style="padding-top:10px;"><span class="card-label">Status</span><span class="badge ${badgeClass}">${stat}</span></div>
+                                    <div class="card-row"><span class="card-label">Coordinates</span><span class="card-value" style="font-family:monospace; font-size:10px;">${lat.toFixed(5)}, ${lng.toFixed(5)}</span></div>
+                                    <div class="card-row" style="padding-top:10px; border:none;"><span class="card-label">Status</span><span class="badge ${badgeClass}">${stat}</span></div>
                                 </div>`;
 
                             var iconData = getIconDataForType(type);
@@ -439,14 +469,11 @@
             });
         }
 
-        // --- MAP CLICK LOGIC ---
-        // When a user clicks a pin and the popup opens, set it as the active marker
         map.on('popupopen', function(e) {
             currentActiveMarker = e.popup._source;
             updateBufferVisibility();
         });
 
-        // When a user closes the popup or clicks elsewhere, remove the buffer
         map.on('popupclose', function(e) {
             if (currentActiveMarker === e.popup._source) {
                 currentActiveMarker.bufferCircle.setStyle({ opacity: 0, fillOpacity: 0 });
@@ -454,18 +481,15 @@
             }
         });
 
-        // Controls showing/hiding the single buffer based on the toggle switch
         function updateBufferVisibility() {
             var isBufferEnabled = document.getElementById('bufferToggle').checked;
             
-            // First, ensure all unclicked buffers are totally hidden
             markers.forEach(function(m) {
                 if (m !== currentActiveMarker || !isBufferEnabled) {
                     m.bufferCircle.setStyle({ opacity: 0, fillOpacity: 0 });
                 }
             });
 
-            // If the toggle is ON, and the user has a pin clicked, fade in the buffer to 10%
             if (isBufferEnabled && currentActiveMarker) {
                 currentActiveMarker.bufferCircle.setStyle({ opacity: 0.4, fillOpacity: 0.1 });
             }
@@ -489,6 +513,12 @@
 
             var firstMatch = null;
             
+            // Dynamic count tracker
+            var counts = {
+                "EVACUATION CENTER": 0, "SCHOOL": 0, "CHURCH": 0,
+                "COVERED COURT": 0, "BARANGAY HALL": 0, "HOSPITAL": 0
+            };
+            
             markers.forEach(function(marker) {
                 var itm = marker.searchData;
                 var mText = itm.name.toLowerCase().includes(query) || itm.mun.toLowerCase().includes(query);
@@ -497,13 +527,26 @@
                 if (mText && mType) {
                     if (!map.hasLayer(marker)) map.addLayer(marker);
                     if (!firstMatch && query.trim() !== "") firstMatch = marker;
+                    
+                    // Increment count for visible items
+                    if(counts[itm.type] !== undefined) { counts[itm.type]++; }
                 } else {
                     if (map.hasLayer(marker)) map.removeLayer(marker);
                 }
             });
             
-            updateBufferVisibility();
+            // Update the DOM counters in the legend smoothly
+            for (var key in counts) {
+                var countSpan = document.getElementById('count-' + key.replace(/\s+/g, '-'));
+                if (countSpan) {
+                    countSpan.innerText = counts[key];
+                    // Add subtle pulse animation if the number changes
+                    countSpan.style.transform = 'scale(1.1)';
+                    setTimeout(() => { countSpan.style.transform = 'scale(1)'; }, 200);
+                }
+            }
             
+            updateBufferVisibility();
             if (firstMatch) { map.setView([firstMatch.searchData.lat, firstMatch.searchData.lng], 14); firstMatch.openPopup(); }
         }
 
